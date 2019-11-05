@@ -6,6 +6,17 @@ open Models
 open DataAccess
 open ElevatedHelpers
 
+module BookingDetailsContext = 
+    open Dtos
+    open Config
+    open Microsoft.Extensions.Options
+
+    type BookingDetailsContext = {
+        GetDtoRequest: Unit -> Async<Result<DtoGetBookingDetailsRequest, string>>
+        GetRegexConfig: Unit -> IOptions<ReferenceConfiguration>
+        GetBookingService: Unit -> Async<Result<IBookingService, string>>
+    }
+
 module Validation = 
     open DomainModels
     open Dtos
@@ -13,6 +24,7 @@ module Validation =
     open Giraffe
     open Microsoft.AspNetCore.Http
     open Microsoft.Extensions.Options
+    open BookingDetailsContext
 
     let stringChecker predicate error (name:string) = 
         match name |> Seq.forall predicate with
@@ -34,10 +46,10 @@ module Validation =
         validateName >> ReaderAsync.retn 
 
     let getRegexPattern =
-        Reader (fun (ctx:HttpContext) -> 
+        Reader (fun (ctx:BookingDetailsContext) -> 
             async {
                 return 
-                    match ctx.GetService<IOptions<ReferenceConfiguration>>() with
+                    match ctx.GetRegexConfig() with
                     | null -> Error "No reference configuration"
                     | cfg -> Ok <| Regex(cfg.Value.regexPattern)
             }
@@ -65,14 +77,10 @@ module GetBookingDetails =
     open Microsoft.AspNetCore.Http
     open DomainModels
     open Dtos
-
-    let getRequestFromQueryString = 
-        Reader (fun (ctx:HttpContext) -> 
-            ctx.TryBindQueryString<DtoGetBookingDetailsRequest>() |> Async.retn)
+    open BookingDetailsContext
 
     let getBookingService = 
-        Reader (fun (ctx:HttpContext) -> 
-            ctx.GetService<IBookingService>() |> Ok |> Async.retn)
+        Reader (fun (ctx:BookingDetailsContext) -> ctx.GetBookingService())
 
     let callService (bookingReference:BookingReference) (service:IBookingService) = 
         service.GetBookingDetails bookingReference
@@ -96,10 +104,10 @@ module FindBookingDetails =
     open Dtos
     open Validation
     open GetBookingDetails
+    open BookingDetailsContext
 
     let getRequestFromQueryString = 
-        Reader (fun (ctx:HttpContext) -> 
-            ctx.TryBindQueryString<DtoGetBookingDetailsRequest>() |> Async.retn)
+        Reader (fun (ctx:BookingDetailsContext) -> ctx.GetDtoRequest() )
 
     let getBookingDetails request = 
         getBookingDetailsFromService request.BookingReference
