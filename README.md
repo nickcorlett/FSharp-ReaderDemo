@@ -2,6 +2,15 @@
 
 A [Giraffe](https://github.com/giraffe-fsharp/Giraffe) web application, which has been created via the `dotnet new giraffe` command.
 
+This is a web application that was developed in order to demonstrate a functional approach to dependency injection using the Reader Monad.
+
+This application pretends to implement the server-side behaviour of an airline booking reference system. The following fictional requirements describe the intended behavior:
+* The last name and booking reference will be provided via query params
+* The last name must not contain numbers or whitespace
+* The booking reference must match the regex pattern in configuration (stored in appsettings.json)
+* A registered service IBookingService will return the booking details associated with a specific reference
+* If the booking details contains a person with the last name supplied they will be returned
+
 ## Build and test the application
 
 ### Windows
