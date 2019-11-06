@@ -11,8 +11,10 @@ This application pretends to implement the server-side behaviour of an airline b
 * A registered service IBookingService will return the booking details associated with a specific reference
 * If the booking details contains a person with the last name supplied they will be returned
 
-In the application there are two examples of the above implementation, each of which demonstrates a different approach to using the HttpContext. In both cases the HttpContext is used in order to read the input from the query string, read the registered configuration, and get the implementation of IBookingService. 
-The first example (WorkflowWithoutReader.fs) uses a standard approach where the HttpContext is passed down through every function that requires it. In this example the functions become tightly coupled to the HttpContext, even if they do not directly use it. 
+In the application there are two examples of the above implementation, each of which demonstrates a different approach to using the HttpContext. In both cases the HttpContext is used in order to retrieve the input from the query string, the registered configuration, and the implementation of IBookingService.
+
+The first example (WorkflowWithoutReader.fs) uses a standard approach where the HttpContext is passed down through every function that requires it. In this example the functions become tightly coupled to the HttpContext, even if they do not directly use it.
+
 The second example (WorkflowWithReader.fs) abstracts away the HttpContext from the main workflow and pushes it to the application boundary. In addition, the new BookingDetailsContext is passed through the workflow using the combined Reader Monad, Async, and Result elevated world so it can be accessed only when required. 
 
 The endpoint of the first example is /bookingDetails, and the endpoint of the second example is /bookingDetailsReader. Both endpoints accept the same query params for the last name and booking reference (?last=Smith&ref=AABBCC) 
